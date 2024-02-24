@@ -13,8 +13,8 @@ import (
 type FS struct{}
 
 // Implementação do método Root
-func (f *FS) Root() (fs.Node, error) {
-	return Dir{}
+func (f FS) Root() (fs.Node, error) {
+	return Dir{}, nil
 }
 
 // Implementação do Directory
@@ -38,7 +38,8 @@ func main() {
 	defer c.Close()
 
 	// Servir o FileSystem
-	if err := fs.Serve(c, FS{}); err != nil {
+	err = fs.Serve(c, FS{})
+	if err != nil {
 		log.Fatal(err)
 	}
 
