@@ -1,32 +1,50 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"os"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"bazil.org/fuse"
+	"bazil.org/fuse/fs"
 )
 
+// Implementação do FileSystem
+type FS struct{}
+
+// Implementação do método Root
+func (f *FS) Root() (fs.Node, error) {
+	return Dir{}, nil
+}
+
+// Implementação do Directory
+type Dir struct{}
+
+// Implementação dos métodos do Diretório
+func (d Dir) Attr() fuse.Attr {
+	return fuse.Attr{Inode: 1, Mode: os.ModeDir | 0755}
+}
+
 func main() {
-	bot, err := tgbotapi.NewBotAPI("7038585765:AAEAhlGInnGdG59xHffGubPyR8HN07lotoo")
+	flag.Parse()
+
+	// Montar o FileSystem
+	c, err := fuse.Mount(
+		os.Args[1],
+	)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
+	}
+	defer c.Close()
+
+	// Servir o FileSystem
+	if err := fs.Serve(c, FS{}); err != nil {
+		log.Fatal(err)
 	}
 
-	bot.Debug = true
-
-	log.Printf("Autorizado como %s", bot.Self.UserName)
-
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates := bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
+	// Esperar até que seja desmontado
+	<-c.Ready
+	if err := c.MountError; err != nil {
+		log.Fatal(err)
 	}
 }
