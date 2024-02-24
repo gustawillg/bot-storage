@@ -14,7 +14,7 @@ type FS struct{}
 
 // Implementação do método Root
 func (f *FS) Root() (fs.Node, error) {
-	return Dir{}, nil
+	return Dir{}
 }
 
 // Implementação do Directory
