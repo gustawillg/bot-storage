@@ -25,15 +25,24 @@ func main() {
 	}
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
+		// Verifica se a atualização é uma mensagem de documento (vídeo, por exemplo)
+		if update.Message.Document != nil && update.Message.Document.MimeType == "video/mp4" {
+			// Se for um vídeo, chama a função para lidar com ele
+			handleVideo(bot, update)
+		} else {
+			// Se não for um vídeo, continua com a lógica para lidar com outros tipos de documentos
+			if update.Message != nil {
+				log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+				handleDocument(bot, update)
+			}
 		}
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		// Handle document messages
-		handleDocument(bot, update)
 	}
+
+}
+
+func handleVideo(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	panic("unimplemented")
+
 }
 
 func handleDocument(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
