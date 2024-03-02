@@ -25,9 +25,7 @@ func main() {
 	}
 
 	for update := range updates {
-		// Verifica se a atualização é uma mensagem de documento (vídeo, por exemplo)
 		if update.Message.Document != nil && update.Message.Document.MimeType == "video/mp4" {
-			// Se for um vídeo, chama a função para lidar com ele
 			err := handleVideoChunks(bot, update.Message)
 			if err != nil {
 				log.Println("Erro ao lidar com os chunks de vídeo:", err)
@@ -36,12 +34,7 @@ func main() {
 	}
 }
 
-// Função para lidar com os chunks de um vídeo
 func handleVideoChunks(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) error {
-	// Aqui você pode implementar a lógica para juntar os chunks de vídeo
-	// Receba os chunks enviados pelos usuários e os una em um único vídeo
-
-	// Exemplo simples: Enviar uma mensagem de confirmação
 	replyMsg := tgbotapi.NewMessage(msg.Chat.ID, "O vídeo foi unido com sucesso!")
 	_, err := bot.Send(replyMsg)
 	if err != nil {
