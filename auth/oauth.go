@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/drive/v2"
+	"google.golang.org/api/drive/v3"
 )
 
 var (
@@ -62,7 +62,7 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	file := drive.File{Name: "NomeDoArquivo"}
 	_, err = srv.Files.Create(&file).Media(r.Body).Do()
 	if err != nil {
-		log.Fatal("erro ao fazer upload do arquivo: %v", err)
+		log.Fatalf("erro: %v", err)
 	}
 
 	var htmlSuccess = `<html><body>Authentication Successful!</body></html>`
