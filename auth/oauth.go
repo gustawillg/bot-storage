@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/drive/v2"
 )
 
 var (
@@ -52,11 +53,18 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := oauthConfig.Client(r.Context(), token)
-	response, err := client.Get(oauthGoogleURLAPI)
+
+	srv, err := drive.New(client)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("erro ao criar serviço do google drive: %v", err)
 	}
-	defer response.Body.Close()
+
+	file := drive.File{Name: "NomeDoArquivo"}
+	_, err = srv.Files.Create(&file).Media(r.Body).Do()
+	if err != nil {
+		log.Fatal("erro ao fazer upload do arquivo: %v", err)
+	}
+
 	var htmlSuccess = `<html><body>Authentication Successful!</body></html>`
 	fmt.Fprintf(w, htmlSuccess)
 }
