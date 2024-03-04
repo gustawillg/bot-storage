@@ -65,6 +65,5 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("erro: %v", err)
 	}
 
-	var htmlSuccess = `<html><body>Authentication Successful!</body></html>`
-	fmt.Fprintf(w, htmlSuccess)
+	fmt.Fprintf(w, "Authentication Successful!")
 }
