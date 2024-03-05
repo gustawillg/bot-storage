@@ -27,35 +27,38 @@ func main() {
 	}
 
 	for update := range updates {
-		if update.Message.Document != nil {
-			switch update.Message.Document.MimeType {
-			case "video/mp4", "video/avi", "video/wmv", "video/mov", "video/qt", "video/mkv", "video/avchd", "video/flv", "video/swf", "video/realvideo":
-				if !oauth.IsLoggedIn(update.Message.Chat.ID) {
-					loginURL := oauth.GetGoogleLoginURL()
-					replyMsg := tgbotapi.NewMessage(update.Message.Chat.ID, "Por favor, faça login no google para Continuar: "+loginURL)
-					_, err := bot.Send(replyMsg)
-					if err != nil {
-						log.Println("Erro ao enviar mensagem de login:", err)
-						continue
-					}
-				} else {
-					err := oauth.UploadToGoogleDrive(update.Message.Document.FileID)
-					if err != nil {
-						log.Println("Erro ao fazer upload do video para o Google Drive: ", err)
-						continue
-					}
+		if update.Message == nil {
+			continue
+		}
 
-					replyMsg := tgbotapi.NewMessage(update.Message.Chat.ID, "O video foi enviado para o Google Drive com sucesso!")
-					_, err = bot.Send(replyMsg)
-					if err != nil {
-						log.Println("Erro ao enviar mensagem de confimação:", err)
+		switch update.Message.Text {
+		case "/start":
+			reply := "Olá! Envie um vídeo no formato MP4, AVI, WMV, MOV, QT, MKV, AVCHD, FLV, SWF ou REALVIDEO e eu vou enviá-lo para o Google Drive."
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			bot.Send(msg)
+		case "/upload":
+			if update.Message.Document != nil {
+				switch update.Message.Document.MimeType {
+				case "video/mp4", "video/avi", "video/wmv", "video/mov", "video/qt", "video/mkv", "video/avchd", "video/flv", "video/swf", "video/realvideo":
+					if !oauth.IsLoggedIn(update.Message.Chat.ID) {
+						loginURL := oauth.GetGoogleLoginURL()
+						reply := "Por favor, faça login no Google para continuar: " + loginURL
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+						bot.Send(msg)
+					} else {
+						err := oauth.UploadToGoogleDrive(update.Message.Document.FileID)
+						if err != nil {
+							log.Println("Erro ao fazer upload do video para o Google Drive: ", err)
+							reply := "Desculpe, ocorreu um erro ao fazer o upload do vídeo."
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+							bot.Send(msg)
+
+						} else {
+							reply := "O vídeo foi enviado para o Google Drive com sucesso!"
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+							bot.Send(msg)
+						}
 					}
-				}
-			default:
-				replyMsg := tgbotapi.NewMessage(update.Message.Chat.ID, "Desculpe, apenas videos nos formatos MP4, AVI, WMV, MOV, QT, MKV, AVCHD, FLV, SWF e REALVIDEO são suportados.")
-				_, err = bot.Send(replyMsg)
-				if err != nil {
-					log.Println("Erro ao enviar mensagem de formato não suportado:", err)
 				}
 			}
 		}
