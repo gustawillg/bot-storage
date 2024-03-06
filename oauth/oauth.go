@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"sync"
@@ -9,7 +8,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 var (
@@ -69,6 +67,7 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := drive.File{Name: "NomeDoArquivo"}
+
 	_, err = srv.Files.Create(&file).Media(r.Body).Do()
 	if err != nil {
 		http.Error(w, "erro ao fazer upload do arquivo", http.StatusInternalServerError)
@@ -100,30 +99,4 @@ func GetToken(userID int64) (string, error) {
 		return "", fmt.Errorf("Token do usuario não encontrada, ID: %d", userID)
 	}
 	return token, nil
-}
-
-func UploadToGoogleDrive(userID int64, fileID string) error {
-	tokenStr, err := GetToken(userID)
-	if err != nil {
-		return err
-	}
-
-	token := &oauth2.Token{
-		AccessToken: tokenStr,
-		TokenType:   "Bearer",
-	}
-
-	client := oauthConfig.Client(context.Background(), token)
-
-	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
-	if err != nil {
-		return fmt.Errorf("Falha ao criar o serviço do Google Drive: %v", err)
-	}
-	defer file.Close()
-
-	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(file).Do()
-	if err != nil {
-		return fmt.Errorf("Erro ao fazer upload do arquivo: %v", err)
-	}
-	return nil
 }
