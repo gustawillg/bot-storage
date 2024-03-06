@@ -3,7 +3,6 @@ package oauth
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 
@@ -92,23 +91,37 @@ func IsLoggedIn(userID int64) bool {
 	return ok
 }
 
+func GetToken(userID int64) (string, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	token, ok := UserTokens[userID]
+	if !ok {
+		return "", fmt.Errorf("Token do usuario não encontrada, ID: %d", userID)
+	}
+	return token, nil
+}
+
 func UploadToGoogleDrive(userID int64, fileID string) error {
-	token, err := GetToken(userID)
+	tokenStr, err := GetToken(userID)
 	if err != nil {
 		return err
+	}
+
+	token := &oauth2.Token{
+		AccessToken: tokenStr,
+		TokenType:   "Bearer",
 	}
 
 	client := oauthConfig.Client(context.Background(), token)
 
 	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Falha ao criar o serviço do Google Drive: %v", err)
-		return err
+		return fmt.Errorf("Falha ao criar o serviço do Google Drive: %v", err)
 	}
-	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(r.Body).Do()
+	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(nil).Do()
 	if err != nil {
-		log.Fatalf("Erro ao fazer upload do arquivo: %v", err)
-		return err
+		return fmt.Errorf("Erro ao fazer upload do arquivo: %v", err)
 	}
 	return nil
 }
