@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func main() {
+func StartServer() {
 	http.HandleFunc("/", handleMain)
 	http.HandleFunc("/login", handleGoogleLogin)
 	http.HandleFunc("/callback", handleGoogleCallback)
