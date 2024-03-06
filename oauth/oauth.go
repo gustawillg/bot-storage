@@ -119,7 +119,9 @@ func UploadToGoogleDrive(userID int64, fileID string) error {
 	if err != nil {
 		return fmt.Errorf("Falha ao criar o serviço do Google Drive: %v", err)
 	}
-	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(nil).Do()
+	defer file.Close()
+
+	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(file).Do()
 	if err != nil {
 		return fmt.Errorf("Erro ao fazer upload do arquivo: %v", err)
 	}
