@@ -1,12 +1,16 @@
 package oauth
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"sync"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 var (
@@ -17,7 +21,12 @@ const (
 	oauthGoogleURLAPI = "https://www.googleapis.com/oauth2/v2/userinfo"
 )
 
+var UserTokens map[int64]string
+var mutex sync.Mutex
+
 func init() {
+	UserTokens = make(map[int64]string)
+
 	oauthConfig = &oauth2.Config{
 		RedirectURL:  "http://localhost:8080/callback",
 		ClientID:     "481585171843-qlhj01c6hhqtjaoqpbrnj8satngah5vk.apps.googleusercontent.com",
@@ -68,4 +77,38 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "autenticaçao e upload bem sucedidos!")
+}
+
+func SetToken(userID int64, token string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	UserTokens[userID] = token
+}
+
+func IsLoggedIn(userID int64) bool {
+	mutex.Lock()
+	defer mutex.Unlock()
+	_, ok := UserTokens[userID]
+	return ok
+}
+
+func UploadToGoogleDrive(userID int64, fileID string) error {
+	token, err := GetToken(userID)
+	if err != nil {
+		return err
+	}
+
+	client := oauthConfig.Client(context.Background(), token)
+
+	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
+	if err != nil {
+		log.Fatalf("Falha ao criar o serviço do Google Drive: %v", err)
+		return err
+	}
+	_, err = srv.Files.Create(&drive.File{Name: "NomeDoArquivo"}).Media(r.Body).Do()
+	if err != nil {
+		log.Fatalf("Erro ao fazer upload do arquivo: %v", err)
+		return err
+	}
+	return nil
 }
