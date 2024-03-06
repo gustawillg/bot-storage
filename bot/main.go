@@ -59,7 +59,15 @@ func main() {
 							bot.Send(msg)
 						}
 					}
+				default:
+					reply := "Desculpe, apenas vídeos nos formatos MP4, AVI, WMV, MOV, QT, MKV, AVCHD, FLV, SWF e REALVIDEO são suportados."
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+					bot.Send(msg)
 				}
+			} else {
+				reply := "Por favor, envie um vídeo para ser enviado para o Google Drive."
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+				bot.Send(msg)
 			}
 		}
 	}
