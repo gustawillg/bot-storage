@@ -46,7 +46,7 @@ func main() {
 						msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 						bot.Send(msg)
 					} else {
-						err := oauth.handleGoogleCallback(update.Message.Document.FileID)
+						err := oauth.HandleGoogleCallback(update.Message.Document.FileID)
 						if err != nil {
 							log.Println("Erro ao fazer upload do video para o Google Drive: ", err)
 							reply := "Desculpe, ocorreu um erro ao fazer o upload do vídeo."

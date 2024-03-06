@@ -36,7 +36,7 @@ func init() {
 func StartServer() {
 	http.HandleFunc("/", handleMain)
 	http.HandleFunc("/login", handleGoogleLogin)
-	http.HandleFunc("/callback", handleGoogleCallback)
+	http.HandleFunc("/callback", HandleGoogleCallback)
 	fmt.Println(http.ListenAndServe(":8080", nil))
 }
 
@@ -50,7 +50,7 @@ func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
+func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	token, err := oauthConfig.Exchange(r.Context(), code)
 	if err != nil {
