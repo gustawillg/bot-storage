@@ -100,3 +100,8 @@ func GetToken(userID int64) (string, error) {
 	}
 	return token, nil
 }
+
+func GetGoogleLoginURL() string {
+	url := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	return url
+}
