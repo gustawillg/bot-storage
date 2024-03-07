@@ -18,6 +18,8 @@ func main() {
 
 	log.Printf("Autorizado como %s", bot.Self.UserName)
 
+	go oauth.StartServer()
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -46,19 +48,11 @@ func main() {
 						msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 						bot.Send(msg)
 					} else {
-						err := oauth.HandleGoogleCallback(update.Message.Document.FileID)
-						if err != nil {
-							log.Println("Erro ao fazer upload do video para o Google Drive: ", err)
-							reply := "Desculpe, ocorreu um erro ao fazer o upload do vídeo."
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-							bot.Send(msg)
-
-						} else {
-							reply := "O vídeo foi enviado para o Google Drive com sucesso!"
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-							bot.Send(msg)
-						}
+						reply := "O vídeo foi enviado para o Google Drive com sucesso!"
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+						bot.Send(msg)
 					}
+
 				default:
 					reply := "Desculpe, apenas vídeos nos formatos MP4, AVI, WMV, MOV, QT, MKV, AVCHD, FLV, SWF e REALVIDEO são suportados."
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
